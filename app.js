@@ -5,7 +5,7 @@ const express = require('express')
 const session = require('express-session')
 const passport = require('passport')
 const connectMongoDB = require('./db/mongodb')
-const MongoStore = require('connect-mongo')
+const MongoDBStore = require('connect-mongodb-session')(session)
 const albumRouter = require('./routes/albums')
 const userRouter = require('./routes/users')
 const loginRouter = require('./routes/login')
@@ -20,15 +20,10 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.CONN_STRING,
-      collectionName: 'sessions',
-    }),
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
+    store: new MongoDBStore({
+      uri: process.env.CONN_STRING,
+      collection: 'sessions',
+    })
   })
 )
 app.use(passport.initialize())
